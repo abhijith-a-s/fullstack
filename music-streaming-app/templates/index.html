@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Music Streaming App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+
+    <!-- Header -->
+    <h1 class="text-4xl font-bold mb-8">🎵 Music Streaming App</h1>
+
+    <!-- Upload Music Section -->
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Upload Music</h2>
+        <input type="file" id="fileInput" accept=".mp3" 
+            class="block w-full text-sm text-gray-300 
+                   file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                   file:text-sm file:font-semibold file:bg-blue-600 file:text-white
+                   hover:file:bg-blue-700 cursor-pointer mb-4"
+            aria-label="Upload music file">
+        <button onclick="uploadFile()" 
+            class="px-6 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500">
+            Upload
+        </button>
+    </div>
+
+    <!-- Available Songs Section -->
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Available Songs</h2>
+        <ul id="songList" class="space-y-3" aria-live="polite"></ul>
+    </div>
+
+    <!-- Audio Player Section -->
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4">Player</h2>
+        <audio id="audioPlayer" controls class="w-full mt-4" aria-label="Music player"></audio>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+
+</body>
+
+</html>
