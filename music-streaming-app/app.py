@@ -1,17 +1,24 @@
-
-from flask import Flask, request, send_from_directory, jsonify, render_template
+from flask import Flask, request, send_from_directory, jsonify, render_template, redirect, url_for
 import os
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Ensure upload directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return redirect(url_for('upload_page'))
+
+@app.route('/upload_page')
+def upload_page():
+    return render_template('upload.html')
+
+@app.route('/player_page')
+def player_page():
+    songs = os.listdir(UPLOAD_FOLDER)
+    return render_template('player.html', songs=songs)
 
 @app.route('/upload', methods=['POST'])
 def upload():

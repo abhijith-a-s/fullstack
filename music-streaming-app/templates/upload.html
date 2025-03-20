@@ -1,0 +1,148 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Music Streaming App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
+
+   
+    <h1 class="text-4xl font-bold mb-8">🎵 Music Streaming App</h1>
+
+    
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Upload Music</h2>
+        <input type="file" id="fileInput" accept=".mp3" 
+            class="block w-full text-sm text-gray-300 
+                   file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                   file:text-sm file:font-semibold file:bg-blue-600 file:text-white
+                   hover:file:bg-blue-700 cursor-pointer mb-4"
+            aria-label="Upload music file">
+        <button onclick="uploadFile()" 
+            class="px-6 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500">
+            Upload
+        </button>
+    </div>
+
+    
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Available Songs</h2>
+        <ul id="songList" class="space-y-3" aria-live="polite"></ul>
+    </div>
+
+    
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4">Player</h2>
+        <audio id="audioPlayer" controls class="w-full mt-4" aria-label="Music player"></audio>
+    </div>
+
+   
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+
+</body>
+
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Upload Music</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6"> 
+    <img src="{{ url_for('static', filename='images/download.png') }}" alt="Gramophone" class="w-48 h-48">   
+    <h1 class="text-4xl font-bold mb-8" style="font-family: cursive;">Gramophone</h1>
+    <!-- <h1 class="text-4xl font-bold mb-8">🎵 Upload Music</h1> -->
+
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+        
+
+        <h2 class="text-2xl font-semibold mb-4">Upload Music</h2>
+        <input type="file" id="fileInput" accept=".mp3"
+            class="block w-full text-sm text-gray-300 
+                   file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                   file:text-sm file:font-semibold file:bg-blue-600 file:text-white
+                   hover:file:bg-blue-700 cursor-pointer mb-4"
+            aria-label="Upload music file">
+        <button onclick="uploadFile()"
+            class="px-6 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500">
+            Upload
+        </button>
+        <div id="loader" class="mt-4 hidden">
+            <div class="loader"></div>
+        </div>
+        <p id="uploadMessage" class="mt-4 text-sm"></p>
+    </div>
+
+    <a href="/player_page" class="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition">Go to Player</a>
+
+    <script>
+        window.uploadFile = function() {
+            const fileInput = document.getElementById('fileInput');
+            const loader = document.getElementById('loader');
+            const message = document.getElementById('uploadMessage');
+
+            if (fileInput.files.length === 0) {
+                message.textContent = 'Please select a file.';
+                message.classList.add('text-red-500');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            loader.classList.remove('hidden');
+            message.textContent = '';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loader.classList.add('hidden');
+                if (data.message) {
+                    message.textContent = `Uploaded: ${file.name}`;
+                    message.classList.remove('text-red-500');
+                    message.classList.add('text-green-500');
+                } else {
+                    message.textContent = `Error: ${data.error}`;
+                    message.classList.add('text-red-500');
+                }
+            })
+            .catch(error => {
+                loader.classList.add('hidden');
+                console.error('Error:', error);
+                message.textContent = 'An error occurred during upload.';
+                message.classList.add('text-red-500');
+            });
+        };
+    </script>
+</body>
+
+</html>

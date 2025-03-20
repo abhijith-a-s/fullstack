@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Music Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .note {
+        position: absolute;
+        font-size: 24px;
+        animation: fall linear infinite;
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(-100px);
+          opacity: 1;
+        }
+        80% {
+          transform: translateY(
+            80vh
+          ); /* Stop falling at 80% of the viewport height */
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(80vh);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6 overflow-auto overflowX-clip"
+  >
+    <img
+      src="{{ url_for('static', filename='images/download.png') }}"
+      alt="Gramophone"
+      class="w-16 h-16"
+    />
+
+    <h1 class="text-lg font-bold mb-4" style="font-family: cursive">
+      Gramophone
+    </h1>
+
+    <!-- <h1 class="text-4xl font-bold mb-8">🎵 Music Player</h1> -->
+
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg mb-2">
+      <h2 class="text-2xl font-semibold mb-4">Available Songs</h2>
+      <ul id="songList" class="space-y-3" aria-live="polite">
+        {% for song in songs %}
+        <li
+          class="flex justify-between items-center bg-gray-700 p-3 rounded-lg"
+        >
+          <span>{{ song }}</span>
+          <button
+            onclick="playSong('{{ song }}')"
+            class="px-4 py-1 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+          >
+            Play
+          </button>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
+      <canvas
+        id="visualizer"
+        width="512"
+        height="100"
+        class="w-full mb-4 rounded-lg"
+      ></canvas>
+      <h2 class="text-2xl font-semibold mb-4">Player</h2>
+      <div class="relative">
+        <audio
+          id="audioPlayer"
+          controls
+          class="w-full mt-4 absolute bottom-0 left-0"
+          aria-label="Music player"
+        ></audio>
+      </div>
+    </div>
+    <div class="absolute top-4 right-4">
+      <a
+        href="/upload_page"
+        class="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition"
+      >
+        Go to Upload
+      </a>
+    </div>
+
+    <script>
+      const audioPlayer = document.getElementById("audioPlayer");
+      const canvas = document.getElementById("visualizer");
+      const canvasCtx = canvas.getContext("2d");
+      let audioCtx, analyser, bufferLength, dataArray;
+      let noteInterval;
+
+      function playSong(filename) {
+        audioPlayer.src = `/play/${filename}`;
+        audioPlayer.play();
+        if (!audioCtx) {
+          setupAudio();
+        }
+      }
+
+      function setupAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaElementSource(audioPlayer);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+        bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        visualize();
+      }
+
+      function visualize() {
+        analyser.getByteFrequencyData(dataArray);
+        canvasCtx.fillStyle = "rgb(0, 0, 0)";
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let x = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = dataArray[i];
+          canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+          canvasCtx.fillRect(
+            x,
+            canvas.height - barHeight / 2,
+            barWidth,
+            barHeight / 2
+          );
+          x += barWidth + 1;
+        }
+        requestAnimationFrame(visualize);
+      }
+
+      audioPlayer.onplay = () => {
+        if (!audioCtx) setupAudio();
+        startNoteAnimation();
+      };
+
+      function startNoteAnimation() {
+        if (noteInterval) clearInterval(noteInterval);
+
+        const notes = ["♪", "♫", "♬", "♭", "♯", "♮"];
+        noteInterval = setInterval(() => {
+          const note = document.createElement("span");
+          note.className = "note";
+          note.textContent = notes[Math.floor(Math.random() * notes.length)];
+          note.style.left = `${Math.random() * window.innerWidth}px`;
+          note.style.animationDuration = `${Math.random() * 5 + 3}s`;
+          note.style.color = `rgb(${Math.random() * 255},${
+            Math.random() * 255
+          },${Math.random() * 255})`;
+          document.body.appendChild(note);
+          setTimeout(() => {
+            note.remove();
+          }, 5000);
+        }, 200);
+      }
+
+      audioPlayer.onpause = () => {
+        clearInterval(noteInterval);
+      };
+
+      audioPlayer.onended = () => {
+        clearInterval(noteInterval);
+      };
+    </script>
+  </body>
+</html>
